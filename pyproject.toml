@@ -1,0 +1,11 @@
+[project]
+name = "PE-miniproject-1"
+version = "0.1.0"
+description = "Mini project for Privacy Engineering course."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "matplotlib>=3.10.7",
+    "numpy",
+]
+
