@@ -6,6 +6,24 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "matplotlib>=3.10.7",
+    "networkx>=3.5",
     "numpy",
 ]
 
+[dependency-groups]
+dev = [
+    "ruff>=0.14.4",
+]
+
+
+[tool.ruff]
+line-length = 88
+
+[tool.ruff.lint]
+exclude = [".venv"]
+select = ["E", "F", "W", "C90", "B", "B9", "ANN", "COM", "D", "ERA", "ISC", "N", "Q000", "S", "SIM", "TID251", "UP", "YTT", "T"]
+ignore = [
+	"D203",  # incorrect-blank-line-before-class
+	"D213",  # multi-line-summary-second-line
+	"D301",  # Use r""" if any backslashes in a docstring
+]
