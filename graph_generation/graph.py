@@ -1,3 +1,5 @@
+"""Module for representing a graph consisting of nodes (Node objects)."""
+
 from node import Node
 import networkx as nx
 import random
@@ -133,7 +135,7 @@ class Graph:
 
         p = min(0.8, max(0.02, 1 / math.log(n + 2)))
         for u, v in combinations(self.nodes, 2):
-            if random.random() < p:
+            if random.random() < p:  # noqa: S311
                 self._connect(u, v)
 
         if self._is_connected():
@@ -146,8 +148,8 @@ class Graph:
         comps = list(nx.connected_components(nx_graph))
 
         for comp_a, comp_b in zip(comps, comps[1:], strict=True):
-            u_idx = random.choice(list(comp_a))
-            v_idx = random.choice(list(comp_b))
+            u_idx = random.choice(list(comp_a))  # noqa: S311
+            v_idx = random.choice(list(comp_b))  # noqa: S311
             self._connect(self.nodes[u_idx], self.nodes[v_idx])
 
     def _initialize_full(self) -> None:
