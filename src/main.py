@@ -1,20 +1,20 @@
-from classes import Graph, Topology
+from classes import Graph, Topology, Simulation
 from utils.logging import get_colored_logger
+import copy
 
 log = get_colored_logger(__name__)
 
-# 1. Create the graph
 graph = Graph(num_nodes=10, topology=Topology.RING)
-
 graph.set_initial_values(range_start=10, range_end=100)
-
-# 3. Run the one-time secret sharing setup
 graph.apply_shares(random_range=100)
 
-secret_avg = sum(n.value for n in graph.nodes) / 10.0
+simulator = Simulation()
+error_list_sync, iterations_sync, avg_sync = simulator.run_ass_synchronous(graph)
+error_list_async, iterations_async, avg_async = simulator.run_ass_asynchronous(graph)
 
-# --- Verification (Optional) ---
-# The sum of secret values should equal the sum of initial values.
+log.info(f"Synchronous Iterations: {iterations_sync}")
+log.info(f"Asynchronous Iterations: {iterations_async}")
+log.info(f"Synchronous Average: {avg_sync}")
+log.info(f"Asynchronous Average: {avg_async}")
+log.info(f"True Average: {graph.true_avg}")
 
-print(f"True Average: {graph.true_avg}")
-print(f"Secret Average: {secret_avg}") # These should be identical!
