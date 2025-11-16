@@ -1,5 +1,6 @@
 """Module for representing a node in a graph."""
 import random
+import copy
 
 class Node:
     """Class for representing a node in a graph.
@@ -25,7 +26,7 @@ class Node:
         self.id = id
         self.value = value
         self.starting_value = value
-        self.neighbors = set()
+        self.neighbors: set[Node] = set()
         
     def generate_shares(self, random_range: float = 100.0) -> dict[int, float]:
         """Generate shares for the node.
@@ -97,3 +98,20 @@ class Node:
 
         """
         return hash(self.id)
+    
+    def __deepcopy__(self, memo):
+        """
+        Custom deepcopy method to handle circular references
+        in the neighbors set.
+        """
+        if id(self) in memo:
+            return memo[id(self)]
+            
+        new_node = self.__class__(self.id, self.value)
+        new_node.starting_value = self.starting_value
+        
+        memo[id(self)] = new_node
+        
+        new_node.neighbors = copy.deepcopy(self.neighbors, memo)
+        
+        return new_node
