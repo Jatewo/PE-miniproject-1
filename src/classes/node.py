@@ -1,5 +1,5 @@
 """Module for representing a node in a graph."""
-
+import random
 
 class Node:
     """Class for representing a node in a graph.
@@ -26,6 +26,45 @@ class Node:
         self.value = value
         self.starting_value = value
         self.neighbors = set()
+        
+    def generate_shares(self, random_range: float = 100.0) -> dict[int, float]:
+        """Generate shares for the node.
+        
+        Generates one random share for each neighbor and subtracts their
+        sum from this node's secret_value.
+        
+        Args:
+            random_range (float, optional): The range of random numbers to generate. Defaults to 100.0.
+        
+        Returns:
+            dict: A dictionary mapping each neighbor to a share value
+        """
+        shares_to_send = {}
+        total_sent = 0.0
+        
+        for neighbor in self.neighbors:
+            share = random.uniform(-random_range, random_range)
+            shares_to_send[neighbor.id] = share
+            total_sent += share
+            
+        self.value -= total_sent
+        
+        return shares_to_send
+    
+    def apply_received_shares(self, received_shares_list: list[float]) -> None:
+        """
+        Adds all received shares to this node's secret_value.
+        
+        Args:
+            received_shares_list (list): A list of received shares
+            
+        Returns:
+            None
+        """
+        total_received = sum(received_shares_list)
+        
+        self.value += total_received
+
 
     def __str__(self) -> str:
         """Create string representation of node.

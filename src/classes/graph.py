@@ -1,6 +1,6 @@
 """Module for representing a graph consisting of nodes (Node objects)."""
 
-from node import Node
+from .node import Node
 import networkx as nx
 import random
 import math
@@ -41,7 +41,13 @@ class Graph:
         """
         self.nodes = [Node(i) for i in range(num_nodes)]
         self.topology = topology
+        self._true_avg = 0.0
         self._initialize_connections()
+        
+    @property
+    def true_avg(self) -> float:
+        """Calculate the true average of the graph."""
+        return sum(node.value for node in self.nodes) / len(self.nodes)
 
     def _initialize_connections(self) -> None:
         match self.topology:
@@ -207,6 +213,47 @@ class Graph:
                     queue.append(neighbor)
 
         return len(reached) == len(self.nodes)
+
+    def set_initial_values(self, range_start: int = 0, range_end: int = 100) -> None:
+        """Set initial values for the graph.
+
+        Args:
+            range_start (int, optional): The start of the range to generate values from. Defaults to 0.
+            range_end (int, optional): The end of the range to generate values from. Defaults to 100.
+
+        Returns:
+            None
+
+        """
+        for node in self.nodes:
+            node.value = random.randint(range_start, range_end)
+
+    def apply_shares(self, random_range: float = 100.0) -> None:
+        """Apply shares to the graph.
+
+        Args:
+            random_range (float, optional): The range of random numbers to generate. Defaults to 100.0.
+
+        Returns:
+            None
+
+        """
+
+        shares_to_send = {node.id: [] for node in self.nodes}
+
+        for node in self.nodes:
+            shares = node.generate_shares(random_range)
+
+            for neighbor, share in shares.items():
+                shares_to_send[neighbor].append(share)
+
+        for node in self.nodes:
+            node.apply_received_shares(shares_to_send[node.id])
+
+    def get_max_error(self):
+        """Calculate the maximum error in the graph."""
+
+        return max(abs(node.value - self.true_avg) for node in self.nodes)
 
     def __str__(self) -> str:
         """Create string representation of graph.
