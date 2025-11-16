@@ -1,4 +1,4 @@
-from classes import Graph, Topology, Simulation
+from classes import Graph, Topology, Simulation, Visualizer
 from utils.logging import get_colored_logger
 import copy
 
@@ -9,6 +9,7 @@ graph.set_initial_values(range_start=10, range_end=100)
 graph.apply_shares(random_range=100)
 
 simulator = Simulation()
+visualizer = Visualizer()
 error_list_sync, iterations_sync, avg_sync = simulator.run_ass_synchronous(graph)
 error_list_async, iterations_async, avg_async = simulator.run_ass_asynchronous(graph)
 
