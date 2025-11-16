@@ -1,6 +1,5 @@
-from classes import Graph, Topology, Simulation, Visualizer
+from secret_sharing import Graph, Topology, Simulation, Visualizer
 from utils.logging import get_colored_logger
-import copy
 
 log = get_colored_logger(__name__)
 
