@@ -41,12 +41,12 @@ class Graph:
         """
         self.nodes = [Node(i) for i in range(num_nodes)]
         self.topology = topology
-        self._true_avg = 0.0
+        self.true_avg = 0.0
         self._initialize_connections()
         
     @property
-    def true_avg(self) -> float:
-        """Calculate the true average of the graph."""
+    def avg(self) -> float:
+        """Calculate the average value of the graph."""
         return sum(node.value for node in self.nodes) / len(self.nodes)
 
     def _initialize_connections(self) -> None:
@@ -227,6 +227,8 @@ class Graph:
         """
         for node in self.nodes:
             node.value = random.randint(range_start, range_end)
+            
+        self.true_avg = sum(node.value for node in self.nodes) / len(self.nodes)
 
     def apply_shares(self, random_range: float = 100.0) -> None:
         """Apply shares to the graph.
@@ -253,7 +255,7 @@ class Graph:
     def get_max_error(self):
         """Calculate the maximum error in the graph."""
 
-        return max(abs(node.value - self.true_avg) for node in self.nodes)
+        return max(abs(node.value - self.true_avg) for node in self.nodes)                
 
     def __str__(self) -> str:
         """Create string representation of graph.
