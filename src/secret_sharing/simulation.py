@@ -1,3 +1,4 @@
+"""Module for simulating a graph."""
 from .graph import Graph
 import random
 import copy
@@ -26,13 +27,15 @@ class Simulation:
         max_iterations: int = 1000,
         epsilon: float = 1e-6,
     ) -> SimulationResult:
-        """Run a simulation of additive secret sharing (ASS) using the specified algorithm.
+        """Run a simulation of additive secret sharing (ASS) using specified algorithm.
 
         Args:
             base_graph (Graph): The base graph to use for the simulation
             algorithm (Algorithm): The algorithm to use for the simulation
-            max_iterations (int, optional): The maximum number of iterations to run. Defaults to 100.
-            epsilon (float, optional): The epsilon value for convergence. Defaults to 1e-6 (0.000001).
+            max_iterations (int, optional): The maximum number of iterations to run.
+                Defaults to 100.
+            epsilon (float, optional): The epsilon value for convergence. Defaults to
+                1e-6 (0.000001).
 
         Returns:
             SimulationResult: The result of the simulation
@@ -46,14 +49,15 @@ class Simulation:
             max_degree = max(len(node.neighbors) for node in graph.nodes)
             alpha = 1.0 / (max_degree + 1)
 
-        for i in range(max_iterations):
+        for _ in range(max_iterations):
             iterations += 1
             max_change = 0.0
+            active_pair = None
 
             if algorithm == Algorithm.SYNCHRONOUS:
                 max_change = self._perform_sync_update(graph, alpha)  # type: ignore
             elif algorithm == Algorithm.ASYNCHRONOUS:
-                self._perform_async_update(graph)
+                active_pair =self._perform_async_update(graph)
 
             error = graph.get_max_error()
             history.append(
@@ -61,7 +65,8 @@ class Simulation:
                     iteration=iterations,
                     values={node.id: node.value for node in graph.nodes},
                     error=error,
-                )
+                    active_pair=active_pair,
+                ),
             )
 
             if self._check_consensus(graph, epsilon, max_change, algorithm):
@@ -109,7 +114,7 @@ class Simulation:
 
         return max_change
 
-    def _perform_async_update(self, graph: Graph) -> None:
+    def _perform_async_update(self, graph: Graph) -> tuple[int, int] | None:
         """Perform an asynchronous update on the graph.
 
         This method randomly selects two nodes and updates their values
@@ -117,23 +122,28 @@ class Simulation:
         """
         node_a = random.choice(graph.nodes)
         if not node_a.neighbors:
-            return
+            return None
         node_b = random.choice(list(node_a.neighbors))
 
         local_avg = (node_a.value + node_b.value) / 2.0
         node_a.value = local_avg
         node_b.value = local_avg
+        return (node_a.id, node_b.id)
 
     def _check_consensus(
-        self, graph: Graph, epsilon: float, max_change: float, algorithm: Algorithm
+        self, graph: Graph, epsilon: float, max_change: float, algorithm: Algorithm,
     ) -> bool:
         """Check if the graph has converged.
 
         Args:
+            graph (Graph): The graph to check
             epsilon (float): The epsilon value for convergence
+            max_change (float): The maximum change in the graph
+            algorithm (Algorithm): The algorithm used to simulate the graph
 
         Returns:
             bool: True if the graph has converged, False otherwise
+
         """
         # This assumes at least 1 node, handled by the main function
 
