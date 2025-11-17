@@ -27,4 +27,5 @@ ignore = [
 	"D203",  # incorrect-blank-line-before-class
 	"D213",  # multi-line-summary-second-line
 	"D301",  # Use r""" if any backslashes in a docstring
+	"S311",  # random-module
 ]
