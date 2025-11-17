@@ -27,43 +27,45 @@ class Node:
         self.value = value
         self.starting_value = value
         self.neighbors: set[Node] = set()
-        
+
     def generate_shares(self, random_range: float = 100.0) -> dict[int, float]:
         """Generate shares for the node.
-        
+
         Generates one random share for each neighbor and subtracts their
         sum from this node's secret_value.
-        
+
         Args:
-            random_range (float, optional): The range of random numbers to generate. Defaults to 100.0.
-        
+            random_range (float, optional): The range of random numbers to generate.
+                Defaults to 100.0.
+
         Returns:
             dict: A dictionary mapping each neighbor to a share value
+
         """
         shares_to_send = {}
         total_sent = 0.0
-        
+
         for neighbor in self.neighbors:
             share = random.uniform(-random_range, random_range)
             shares_to_send[neighbor.id] = share
             total_sent += share
-            
+
         self.value -= total_sent
-        
+
         return shares_to_send
-    
+
     def apply_received_shares(self, received_shares_list: list[float]) -> None:
-        """
-        Adds all received shares to this node's secret_value.
-        
+        """Add all received shares to this node's secret_value.
+
         Args:
             received_shares_list (list): A list of received shares
-            
+
         Returns:
             None
+
         """
         total_received = sum(received_shares_list)
-        
+
         self.value += total_received
 
 
@@ -98,20 +100,25 @@ class Node:
 
         """
         return hash(self.id)
-    
-    def __deepcopy__(self, memo):
-        """
-        Custom deepcopy method to handle circular references
-        in the neighbors set.
+
+    def __deepcopy__(self, memo: dict) -> "Node":
+        """Deepcopy to handle circular references in the neighbors set.
+
+        Args:
+            memo (dict): The memo dictionary
+
+        Returns:
+            Node: A deepcopy of the node
+
         """
         if id(self) in memo:
             return memo[id(self)]
-            
+
         new_node = self.__class__(self.id, self.value)
         new_node.starting_value = self.starting_value
-        
+
         memo[id(self)] = new_node
-        
+
         new_node.neighbors = copy.deepcopy(self.neighbors, memo)
-        
+
         return new_node

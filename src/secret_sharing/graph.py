@@ -43,7 +43,7 @@ class Graph:
         self.topology = topology
         self.true_avg = 0.0
         self._initialize_connections()
-        
+
     @property
     def avg(self) -> float:
         """Calculate the average value of the graph."""
@@ -141,7 +141,7 @@ class Graph:
 
         p = min(0.8, max(0.02, 1 / math.log(n + 2)))
         for u, v in combinations(self.nodes, 2):
-            if random.random() < p:  # noqa: S311
+            if random.random() < p:
                 self._connect(u, v)
 
         if self._is_connected():
@@ -154,8 +154,8 @@ class Graph:
         comps = list(nx.connected_components(nx_graph))
 
         for comp_a, comp_b in zip(comps, comps[1:], strict=True):
-            u_idx = random.choice(list(comp_a))  # noqa: S311
-            v_idx = random.choice(list(comp_b))  # noqa: S311
+            u_idx = random.choice(list(comp_a))
+            v_idx = random.choice(list(comp_b))
             self._connect(self.nodes[u_idx], self.nodes[v_idx])
 
     def _initialize_full(self) -> None:
@@ -218,8 +218,10 @@ class Graph:
         """Set initial values for the graph.
 
         Args:
-            range_start (int, optional): The start of the range to generate values from. Defaults to 0.
-            range_end (int, optional): The end of the range to generate values from. Defaults to 100.
+            range_start (int, optional): The start of the range to generate values from.
+                Defaults to 0.
+            range_end (int, optional): The end of the range to generate values from.
+                Defaults to 100.
 
         Returns:
             None
@@ -227,20 +229,20 @@ class Graph:
         """
         for node in self.nodes:
             node.value = random.randint(range_start, range_end)
-            
+
         self.true_avg = sum(node.value for node in self.nodes) / len(self.nodes)
 
     def apply_shares(self, random_range: float = 100.0) -> None:
         """Apply shares to the graph.
 
         Args:
-            random_range (float, optional): The range of random numbers to generate. Defaults to 100.0.
+            random_range (float, optional): The range of random numbers to generate.
+                Defaults to 100.0.
 
         Returns:
             None
 
         """
-
         shares_to_send = {node.id: [] for node in self.nodes}
 
         for node in self.nodes:
@@ -252,10 +254,14 @@ class Graph:
         for node in self.nodes:
             node.apply_received_shares(shares_to_send[node.id])
 
-    def get_max_error(self):
-        """Calculate the maximum error in the graph."""
+    def get_max_error(self) -> float:
+        """Calculate the maximum error in the graph.
 
-        return max(abs(node.value - self.true_avg) for node in self.nodes)                
+        Returns:
+            float: The maximum error in the graph
+
+        """
+        return max(abs(node.value - self.true_avg) for node in self.nodes)
 
     def __str__(self) -> str:
         """Create string representation of graph.
