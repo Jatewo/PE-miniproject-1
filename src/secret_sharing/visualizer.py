@@ -105,20 +105,22 @@ class Visualizer:
                 - values: The list of errors
                 - label: Legend label
                 - step_size: The interval at which data was recorded (e.g., 1 or 10)
-            title (str, optional): The title of the plot. Defaults to "Convergence".
             show (bool, optional): Whether to show the plot. Defaults to False.
             save_path (str | None, optional): The path to save the plot to. Defaults to
+                None.
+            y_min (float | None, optional): Minimum value for the y-axis. Defaults to
                 None.
 
         """
         plt.figure(figsize=(12, 7))
-    
+
 
         for res in results:
             iterations = [step.iteration for step in res.history]
             errors = [step.error for step in res.history]
 
-            label = f"{res.topology.name.capitalize()} - {res.algorithm.capitalize()} ({res.total_iterations} iters))"
+            label =(f"{res.topology.name.capitalize()} - "
+                f"{res.algorithm.capitalize()} ({res.total_iterations} iters))")
 
             plt.plot(
                 iterations,
@@ -128,7 +130,7 @@ class Visualizer:
                 markersize=1,
                 alpha=0.7,
             )
-            
+
         if y_min is not None:
             plt.ylim(bottom=y_min)
 
@@ -137,7 +139,7 @@ class Visualizer:
         plt.yscale("log")
         plt.xlabel("Iterations")
         plt.ylabel("Maximum Error (Log Scale)")
-        plt.title(f"Convergence")
+        plt.title("Convergence")
         plt.legend(title)
         plt.grid(True, which="both", ls=":")
         plt.tight_layout()
@@ -150,9 +152,10 @@ class Visualizer:
 
     def _get_title(self, results: list[SimulationResult]) -> str:
         if len(results) > 1:
-            title = f"Convergence Plots"
+            title = "Convergence Plots"
         else:
-            title = f"Convergence Plot {results[0].topology.name.capitalize()} - {results[0].algorithm.capitalize()}"
+            title = (f"Convergence Plot {results[0].topology.name.capitalize()} "
+            f"- {results[0].algorithm.capitalize()}")
         return title
 
     def animate_convergence(
