@@ -1,4 +1,5 @@
 """Module for simulating a graph."""
+
 from .graph import Graph
 import random
 import copy
@@ -44,6 +45,15 @@ class Simulation:
         graph = copy.deepcopy(base_graph)
         history = []
         iterations = 0
+        alpha = 0.0
+
+        history.append(
+            StepResult(
+                iteration=0,
+                values={node.id: node.value for node in graph.nodes},
+                error=graph.get_max_error(),
+            ),
+        )
 
         if algorithm == Algorithm.SYNCHRONOUS:
             max_degree = max(len(node.neighbors) for node in graph.nodes)
@@ -51,13 +61,9 @@ class Simulation:
 
         for _ in range(max_iterations):
             iterations += 1
-            max_change = 0.0
             active_pair = None
 
-            if algorithm == Algorithm.SYNCHRONOUS:
-                max_change = self._perform_sync_update(graph, alpha)  # type: ignore
-            elif algorithm == Algorithm.ASYNCHRONOUS:
-                active_pair =self._perform_async_update(graph)
+            max_change, active_pair = self._perform_update(graph, algorithm, alpha)
 
             error = graph.get_max_error()
             history.append(
@@ -74,10 +80,33 @@ class Simulation:
 
         return SimulationResult(
             algorithm=algorithm.name,
+            topology=graph.topology,
             history=history,
             total_iterations=iterations,
             final_avg=graph.avg,
         )
+
+    def _perform_update(
+        self, graph: Graph, algorithm: Algorithm, alpha: float,
+    ) -> tuple[float, tuple[int, int] | None]:
+        """Perform an update on the graph.
+
+        Args:
+            graph (Graph): The graph to update
+            algorithm (Algorithm): The algorithm to use for the update
+            alpha (float): A self-weight constant
+
+        Returns:
+            None
+
+        """
+        max_change, active_pair = 0.0, None
+        if algorithm == Algorithm.SYNCHRONOUS:
+            max_change = self._perform_sync_update(graph, alpha)
+        elif algorithm == Algorithm.ASYNCHRONOUS:
+            active_pair = self._perform_async_update(graph)
+
+        return max_change, active_pair
 
     def _perform_sync_update(self, graph: Graph, alpha: float) -> float:
         """Perform an synchronous update on the graph.
@@ -87,7 +116,7 @@ class Simulation:
 
         Args:
             graph (Graph): The graph to update
-            alpha (float): The self-weight
+            alpha (float): A self-weight constant
 
         Returns:
             None
@@ -131,7 +160,11 @@ class Simulation:
         return (node_a.id, node_b.id)
 
     def _check_consensus(
-        self, graph: Graph, epsilon: float, max_change: float, algorithm: Algorithm,
+        self,
+        graph: Graph,
+        epsilon: float,
+        max_change: float,
+        algorithm: Algorithm,
     ) -> bool:
         """Check if the graph has converged.
 
