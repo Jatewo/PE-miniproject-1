@@ -93,9 +93,9 @@ class Visualizer:
         self,
         results: list[SimulationResult],
         *,
-        title: str = "Convergence",
         show: bool = False,
         save_path: str | None = None,
+        y_min: float | None = None,
     ) -> None:
         """Plot error histories.
 
@@ -112,12 +112,13 @@ class Visualizer:
 
         """
         plt.figure(figsize=(12, 7))
+    
 
         for res in results:
             iterations = [step.iteration for step in res.history]
             errors = [step.error for step in res.history]
 
-            label = f"{res.algorithm.capitalize()} ({res.total_iterations} iters)"
+            label = f"{res.topology.name.capitalize()} - {res.algorithm.capitalize()} ({res.total_iterations} iters))"
 
             plt.plot(
                 iterations,
@@ -127,12 +128,17 @@ class Visualizer:
                 markersize=1,
                 alpha=0.7,
             )
+            
+        if y_min is not None:
+            plt.ylim(bottom=y_min)
+
+        title = self._get_title(results)
 
         plt.yscale("log")
         plt.xlabel("Iterations")
         plt.ylabel("Maximum Error (Log Scale)")
-        plt.title(title)
-        plt.legend()
+        plt.title(f"Convergence")
+        plt.legend(title)
         plt.grid(True, which="both", ls=":")
         plt.tight_layout()
 
@@ -141,6 +147,13 @@ class Visualizer:
 
         if show:
             plt.show()
+
+    def _get_title(self, results: list[SimulationResult]) -> str:
+        if len(results) > 1:
+            title = f"Convergence Plots"
+        else:
+            title = f"Convergence Plot {results[0].topology.name.capitalize()} - {results[0].algorithm.capitalize()}"
+        return title
 
     def animate_convergence(
         self,
