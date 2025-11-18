@@ -63,7 +63,6 @@ graph_drawing = visualizer.draw_graph(
 if args.plot:
     visualizer.plot_convergence(
         [res_sync, res_async],
-        title="Convergence",
         save_path="figures/convergence.png",
         show=args.plot,
     )
