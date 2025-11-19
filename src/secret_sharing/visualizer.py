@@ -4,7 +4,7 @@ import networkx as nx
 import matplotlib.pyplot as plt
 from .graph import Graph
 import os
-from .results import SimulationResult
+from .results import SimulationResult, StepResult
 from matplotlib.animation import FuncAnimation
 from utils.logging import get_colored_logger
 import numpy as np
@@ -12,6 +12,8 @@ from matplotlib.collections import PathCollection
 from matplotlib.figure import Figure
 from matplotlib.artist import Artist
 from collections.abc import Iterable
+from .graph import Topology
+from .simulation import Algorithm
 
 log = get_colored_logger(__name__)
 
@@ -114,13 +116,14 @@ class Visualizer:
         """
         plt.figure(figsize=(12, 7))
 
-
         for res in results:
             iterations = [step.iteration for step in res.history]
             errors = [step.error for step in res.history]
 
-            label =(f"{res.topology.name.capitalize()} - "
-                f"{res.algorithm.capitalize()} ({res.total_iterations} iters))")
+            label = (
+                f"{res.topology.name.capitalize()} - "
+                f"{res.algorithm.capitalize()} ({res.total_iterations} iters))"
+            )
 
             plt.plot(
                 iterations,
@@ -154,8 +157,10 @@ class Visualizer:
         if len(results) > 1:
             title = "Convergence Plots"
         else:
-            title = (f"Convergence Plot {results[0].topology.name.capitalize()} "
-            f"- {results[0].algorithm.capitalize()}")
+            title = (
+                f"Convergence Plot {results[0].topology.name.capitalize()} "
+                f"- {results[0].algorithm.capitalize()}"
+            )
         return title
 
     def animate_convergence(
@@ -179,11 +184,20 @@ class Visualizer:
         nx.draw_networkx_edges(g, pos, ax=ax, alpha=0.2, edge_color="gray")
 
         node_collection = nx.draw_networkx_nodes(
-            g, pos, node_size=600, ax=ax, cmap="coolwarm", node_color=[0] * len(g),
+            g,
+            pos,
+            node_size=600,
+            ax=ax,
+            cmap="coolwarm",
+            node_color=[0] * len(g),
         )
 
         text_items = nx.draw_networkx_labels(
-            g, pos, font_size=10, font_weight="bold", ax=ax,
+            g,
+            pos,
+            font_size=10,
+            font_weight="bold",
+            ax=ax,
         )
 
         highlight_nodes = nx.draw_networkx_nodes(
@@ -199,7 +213,6 @@ class Visualizer:
 
         ax.axis("off")
 
-        # Color Normalization
         all_values = []
         for step in result.history:
             all_values.extend(step.values.values())
@@ -212,28 +225,25 @@ class Visualizer:
             step_data = result.history[frame_idx]
             current_values = step_data.values
 
-            # Update Node Colors
             new_colors = [current_values[n] for n in g.nodes()]
             node_collection.set_array(new_colors)
 
-            # Update Text Labels
             for node_id, text_obj in text_items.items():
                 text_obj.set_text(f"{current_values[node_id]:.2f}")
 
-            # Update Highlighter
             self._update_highlighter(highlight_nodes, step_data.active_pair, pos)
 
             ax.set_title(f"Iteration: {step_data.iteration}")
 
             return [node_collection, highlight_nodes] + list(text_items.values())
 
-        filtered_history = list(filter(lambda n: n.error > 0.01, result.history))
+        filtered_history = self._filter_history(result)
         log.debug(f"Rendering {len(filtered_history)} frames to {filename}...")
 
         anim = FuncAnimation(
             fig,
             update,
-            frames=len(list(filter(lambda n: n.error > 0.01, result.history))),
+            frames=len(filtered_history),
             interval=interval,
             blit=False,
         )
@@ -246,10 +256,20 @@ class Visualizer:
         finally:
             plt.close(fig)
 
+    def _filter_history(self, result: SimulationResult) -> list[StepResult]:
+        if not (
+            result.topology == Topology.FULL
+            and result.algorithm == Algorithm.SYNCHRONOUS.name
+        ):
+            filtered_history = list(filter(lambda n: n.error > 0.001, result.history))
+        else:
+            filtered_history = result.history
+        return filtered_history
+
     def _color_normalize(
         self,
         values: list[float],
-        contrast: float = 7.0,
+        contrast: float = 15.0,
     ) -> tuple[float, float]:
         """Normalize the color scale for a list of values.
 
