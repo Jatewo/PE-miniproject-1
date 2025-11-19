@@ -5,6 +5,7 @@ import random
 import copy
 from .results import SimulationResult, StepResult
 from enum import Enum
+from dataclasses import dataclass
 
 
 class Algorithm(Enum):
@@ -12,7 +13,23 @@ class Algorithm(Enum):
 
     SYNCHRONOUS = 0
     ASYNCHRONOUS = 1
+    
+class NoiseDistribution(Enum):
+    """Enumeration of noise distributions."""
+    
+    UNIFORM = 0
+    GAUSSIAN = 1
+    LAPLACE = 2
 
+@dataclass
+class SimulationConfig:
+    """Class for storing the configuration for a simulation run."""
+    
+    algorithm: Algorithm = Algorithm.SYNCHRONOUS
+    max_iterations: int = 1000
+    epsilon: float = 1e-6
+    noise_scale: float | None = None
+    noise_distribution: NoiseDistribution | None = None
 
 class Simulation:
     """Class for simulating a graph."""
@@ -24,9 +41,7 @@ class Simulation:
     def run_simulation(
         self,
         base_graph: Graph,
-        algorithm: Algorithm,
-        max_iterations: int = 1000,
-        epsilon: float = 1e-6,
+        config: SimulationConfig,
     ) -> SimulationResult:
         """Run a simulation of additive secret sharing (ASS) using specified algorithm.
 
@@ -46,6 +61,11 @@ class Simulation:
         history = []
         iterations = 0
         alpha = 0.0
+        algorithm = config.algorithm
+        max_iterations = config.max_iterations
+        epsilon = config.epsilon
+        noise_scale = config.noise_scale
+        noise_distribution = config.noise_distribution
 
         history.append(
             StepResult(
@@ -79,8 +99,8 @@ class Simulation:
                 break
 
         return SimulationResult(
-            algorithm=algorithm.name,
-            topology=graph.topology,
+            algorithm=algorithm,
+            graph=graph,
             history=history,
             total_iterations=iterations,
             final_avg=graph.avg,

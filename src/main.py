@@ -2,7 +2,7 @@
 from secret_sharing import Graph, Topology, Simulation, Visualizer
 from utils.logging import get_colored_logger
 from argparse import ArgumentParser
-from secret_sharing.simulation import Algorithm
+from secret_sharing.simulation import Algorithm, SimulationConfig
 
 argparser = ArgumentParser()
 argparser.add_argument(
@@ -43,8 +43,13 @@ graph.apply_shares(random_range=args.random_range)
 
 simulator = Simulation()
 visualizer = Visualizer()
-res_sync = simulator.run_simulation(graph, Algorithm.SYNCHRONOUS)
-res_async = simulator.run_simulation(graph, Algorithm.ASYNCHRONOUS)
+config = SimulationConfig(
+    max_iterations=args.max_iterations,
+    epsilon=args.epsilon,
+    algorithm=Algorithm[args.algorithm],
+)
+res_sync = simulator.run_simulation(graph, config)
+res_async = simulator.run_simulation(graph, config)
 
 log.info(f"Synchronous Iterations: {res_sync.total_iterations}")
 log.info(f"Asynchronous Iterations: {res_async.total_iterations}")

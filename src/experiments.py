@@ -1,7 +1,7 @@
 """Module for running experiments for bonus question 1."""
 
 from secret_sharing import Graph, Topology, Simulation, Visualizer
-from secret_sharing.simulation import Algorithm
+from secret_sharing.simulation import Algorithm, SimulationConfig
 from utils.logging import get_colored_logger
 
 log = get_colored_logger(__name__)
@@ -21,13 +21,19 @@ def experiment_1() -> None:
     visualizer = Visualizer()
 
     results = []
+    
+    config = SimulationConfig(
+        max_iterations=5000,
+        epsilon=1e-6,
+        algorithm=Algorithm.SYNCHRONOUS,
+    )
 
     for graph in graphs:
         graph.set_initial_values(range_start=0, range_end=100)
         graph.apply_shares(random_range=100.0)
         log.info(f"Running experiment for {graph.topology.name} topology...")
         res = simulator.run_simulation(
-            graph, Algorithm.SYNCHRONOUS, max_iterations=5000
+            graph, config
         )
 
         results.append(res)
@@ -55,7 +61,7 @@ def experiment_1() -> None:
     for graph in graphs:
         graph.set_initial_values(range_start=0, range_end=100)
         graph.apply_shares(random_range=100.0)
-        res = simulator.run_simulation(graph, Algorithm.SYNCHRONOUS)
+        res = simulator.run_simulation(graph, config)
         results.append(res)
 
         visualizer.animate_convergence(
