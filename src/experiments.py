@@ -28,9 +28,6 @@ def experiment_1() -> None:
         log.info(f"Running experiment for {graph.topology.name} topology...")
         res = simulator.run_simulation(graph, Algorithm.SYNCHRONOUS)
 
-        if graph.topology == Topology.FULL:
-            log.debug(res)
-
         results.append(res)
 
         log.info(f"Plotting convergence for {graph.topology.name} topology...")
