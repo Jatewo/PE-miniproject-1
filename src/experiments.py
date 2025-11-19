@@ -16,7 +16,7 @@ def experiment_1() -> None:
         None
 
     """
-    graphs = [Graph(num_nodes=10, topology=topology) for topology in Topology]
+    graphs = [Graph(num_nodes=50, topology=topology) for topology in Topology]
     simulator = Simulation()
     visualizer = Visualizer()
 
@@ -26,7 +26,9 @@ def experiment_1() -> None:
         graph.set_initial_values(range_start=0, range_end=100)
         graph.apply_shares(random_range=100.0)
         log.info(f"Running experiment for {graph.topology.name} topology...")
-        res = simulator.run_simulation(graph, Algorithm.SYNCHRONOUS)
+        res = simulator.run_simulation(
+            graph, Algorithm.SYNCHRONOUS, max_iterations=5000
+        )
 
         results.append(res)
 
@@ -38,11 +40,6 @@ def experiment_1() -> None:
         )
 
         log.info(f"Animating convergence for {graph.topology.name} topology...")
-        visualizer.animate_convergence(
-            graph,
-            res,
-            f"figures/experiment_1/synchronous_{graph.topology.name}.gif",
-        )
 
     visualizer.plot_convergence(
         results,
@@ -50,6 +47,22 @@ def experiment_1() -> None:
         show=False,
         y_min=1e-6,
     )
+
+    graphs = [Graph(num_nodes=10, topology=topology) for topology in Topology]
+
+    results = []
+
+    for graph in graphs:
+        graph.set_initial_values(range_start=0, range_end=100)
+        graph.apply_shares(random_range=100.0)
+        res = simulator.run_simulation(graph, Algorithm.SYNCHRONOUS)
+        results.append(res)
+
+        visualizer.animate_convergence(
+            graph,
+            res,
+            f"figures/experiment_1/synchronous_{graph.topology.name}.gif",
+        )
 
 
 if __name__ == "__main__":
