@@ -153,7 +153,7 @@ class Graph:
 
         comps = list(nx.connected_components(nx_graph))
 
-        for comp_a, comp_b in zip(comps, comps[1:], strict=True):
+        for comp_a, comp_b in zip(comps, comps[1:], strict=False):
             u_idx = random.choice(list(comp_a))
             v_idx = random.choice(list(comp_b))
             self._connect(self.nodes[u_idx], self.nodes[v_idx])
