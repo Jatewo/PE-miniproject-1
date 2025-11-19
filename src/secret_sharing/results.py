@@ -1,6 +1,9 @@
 """Module for storing the result of a simulation."""
 from dataclasses import dataclass
-from .graph import Topology
+from .graph import Graph
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from .simulation import Algorithm
 
 @dataclass
 class StepResult:
@@ -15,8 +18,8 @@ class StepResult:
 class SimulationResult:
     """Class for storing the result of a simulation."""
 
-    algorithm: str
-    topology: Topology
+    algorithm: "Algorithm"
+    graph: Graph
     history: list[StepResult]
     total_iterations: int
     final_avg: float
