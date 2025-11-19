@@ -116,13 +116,15 @@ class Visualizer:
         """
         plt.figure(figsize=(12, 7))
 
+        labels = []
 
         for res in results:
             iterations = [step.iteration for step in res.history]
             errors = [step.error for step in res.history]
 
-            label =(f"{res.topology.name.capitalize()} - "
-                f"{res.algorithm.capitalize()} ({res.total_iterations} iters))")
+            label =(f"{res.graph.topology.name.capitalize()} - "
+                f"{res.algorithm.name.capitalize()} ({res.total_iterations} iters))")
+            labels.append(label)
 
             plt.plot(
                 iterations,
@@ -141,8 +143,8 @@ class Visualizer:
         plt.yscale("log")
         plt.xlabel("Iterations")
         plt.ylabel("Maximum Error (Log Scale)")
-        plt.title("Convergence")
-        plt.legend(title)
+        plt.title(title)
+        plt.legend(labels)
         plt.grid(True, which="both", ls=":")
         plt.tight_layout()
 
@@ -156,8 +158,8 @@ class Visualizer:
         if len(results) > 1:
             title = "Convergence Plots"
         else:
-            title = (f"Convergence Plot {results[0].topology.name.capitalize()} "
-            f"- {results[0].algorithm.capitalize()}")
+            title = (f"Convergence Plot {results[0].graph.topology.name.capitalize()} "
+            f"- {results[0].algorithm.name.capitalize()}")
         return title
 
     def animate_convergence(
@@ -246,8 +248,8 @@ class Visualizer:
 
     def _filter_history(self, result: SimulationResult) -> list[StepResult]:
         if not (
-            result.topology == Topology.FULL
-            and result.algorithm == Algorithm.SYNCHRONOUS.name
+            result.graph.topology == Topology.FULL
+            and result.algorithm == Algorithm.SYNCHRONOUS
         ):
             filtered_history = list(filter(lambda n: n.error > 0.001, result.history))
         else:
