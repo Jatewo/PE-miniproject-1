@@ -6,6 +6,7 @@ import copy
 from .results import SimulationResult, StepResult
 from enum import Enum
 from dataclasses import dataclass
+import numpy as np
 
 
 class Algorithm(Enum):
@@ -13,23 +14,26 @@ class Algorithm(Enum):
 
     SYNCHRONOUS = 0
     ASYNCHRONOUS = 1
-    
+
+
 class NoiseDistribution(Enum):
     """Enumeration of noise distributions."""
-    
+
     UNIFORM = 0
     GAUSSIAN = 1
     LAPLACE = 2
 
+
 @dataclass
 class SimulationConfig:
     """Class for storing the configuration for a simulation run."""
-    
+
     algorithm: Algorithm = Algorithm.SYNCHRONOUS
     max_iterations: int = 1000
     epsilon: float = 1e-6
-    noise_scale: float | None = None
+    noise_scale: float = 0.0
     noise_distribution: NoiseDistribution | None = None
+
 
 class Simulation:
     """Class for simulating a graph."""
@@ -61,11 +65,10 @@ class Simulation:
         history = []
         iterations = 0
         alpha = 0.0
+
         algorithm = config.algorithm
         max_iterations = config.max_iterations
         epsilon = config.epsilon
-        noise_scale = config.noise_scale
-        noise_distribution = config.noise_distribution
 
         history.append(
             StepResult(
@@ -83,7 +86,7 @@ class Simulation:
             iterations += 1
             active_pair = None
 
-            max_change, active_pair = self._perform_update(graph, algorithm, alpha)
+            max_change, active_pair = self._perform_update(graph, alpha, config)
 
             error = graph.get_max_error()
             history.append(
@@ -106,8 +109,34 @@ class Simulation:
             final_avg=graph.avg,
         )
 
+    def _get_noise(
+        self, noise_distribution: NoiseDistribution | None, noise_scale: float
+    ) -> float:
+        """Get a noise value based on the noise distribution and scale.
+
+        Args:
+            noise_distribution (NoiseDistribution): The noise distribution to use
+            noise_scale (float): The scale of the noise
+
+        Returns:
+            float: The noise value
+
+        """
+        match noise_distribution:
+            case NoiseDistribution.UNIFORM:
+                return np.random.uniform(-noise_scale, noise_scale)
+            case NoiseDistribution.GAUSSIAN:
+                return np.random.normal(0, noise_scale)
+            case NoiseDistribution.LAPLACE:
+                return np.random.laplace(0, noise_scale)
+            case _:
+                return 0.0
+
     def _perform_update(
-        self, graph: Graph, algorithm: Algorithm, alpha: float,
+        self,
+        graph: Graph,
+        alpha: float,
+        config: SimulationConfig,
     ) -> tuple[float, tuple[int, int] | None]:
         """Perform an update on the graph.
 
@@ -121,14 +150,16 @@ class Simulation:
 
         """
         max_change, active_pair = 0.0, None
-        if algorithm == Algorithm.SYNCHRONOUS:
-            max_change = self._perform_sync_update(graph, alpha)
-        elif algorithm == Algorithm.ASYNCHRONOUS:
-            active_pair = self._perform_async_update(graph)
+        if config.algorithm == Algorithm.SYNCHRONOUS:
+            max_change = self._perform_sync_update(graph, alpha, config)
+        elif config.algorithm == Algorithm.ASYNCHRONOUS:
+            active_pair = self._perform_async_update(graph, config)
 
         return max_change, active_pair
 
-    def _perform_sync_update(self, graph: Graph, alpha: float) -> float:
+    def _perform_sync_update(
+        self, graph: Graph, alpha: float, config: SimulationConfig
+    ) -> float:
         """Perform an synchronous update on the graph.
 
         This method updates the values of the graph nodes
@@ -137,6 +168,7 @@ class Simulation:
         Args:
             graph (Graph): The graph to update
             alpha (float): A self-weight constant
+            config (SimulationConfig): The simulation configuration
 
         Returns:
             None
@@ -152,7 +184,9 @@ class Simulation:
             weighted_sum = self_weight * node.value
 
             for neighbor in node.neighbors:
-                weighted_sum += alpha * neighbor.value
+                noise = self._get_noise(config.noise_distribution, config.noise_scale)
+                received_value = neighbor.value + noise
+                weighted_sum += alpha * received_value
 
             next_values[node.id] = weighted_sum
 
@@ -163,7 +197,7 @@ class Simulation:
 
         return max_change
 
-    def _perform_async_update(self, graph: Graph) -> tuple[int, int] | None:
+    def _perform_async_update(self, graph: Graph, config: SimulationConfig) -> tuple[int, int] | None:
         """Perform an asynchronous update on the graph.
 
         This method randomly selects two nodes and updates their values
@@ -173,10 +207,18 @@ class Simulation:
         if not node_a.neighbors:
             return None
         node_b = random.choice(list(node_a.neighbors))
+        
+        noise_a = self._get_noise(config.noise_distribution, config.noise_scale)
+        noise_b = self._get_noise(config.noise_distribution, config.noise_scale)
+        
+        val_a_noisy = node_a.value + noise_a
+        val_b_noisy = node_b.value + noise_b
 
-        local_avg = (node_a.value + node_b.value) / 2.0
-        node_a.value = local_avg
-        node_b.value = local_avg
+        new_a = (node_a.value + val_b_noisy) / 2.0
+        new_b = (node_b.value + val_a_noisy) / 2.0
+        
+        node_a.value = new_a
+        node_b.value = new_b
         return (node_a.id, node_b.id)
 
     def _check_consensus(
