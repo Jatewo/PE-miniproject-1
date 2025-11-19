@@ -116,14 +116,13 @@ class Visualizer:
         """
         plt.figure(figsize=(12, 7))
 
+
         for res in results:
             iterations = [step.iteration for step in res.history]
             errors = [step.error for step in res.history]
 
-            label = (
-                f"{res.topology.name.capitalize()} - "
-                f"{res.algorithm.capitalize()} ({res.total_iterations} iters))"
-            )
+            label =(f"{res.topology.name.capitalize()} - "
+                f"{res.algorithm.capitalize()} ({res.total_iterations} iters))")
 
             plt.plot(
                 iterations,
@@ -157,10 +156,8 @@ class Visualizer:
         if len(results) > 1:
             title = "Convergence Plots"
         else:
-            title = (
-                f"Convergence Plot {results[0].topology.name.capitalize()} "
-                f"- {results[0].algorithm.capitalize()}"
-            )
+            title = (f"Convergence Plot {results[0].topology.name.capitalize()} "
+            f"- {results[0].algorithm.capitalize()}")
         return title
 
     def animate_convergence(
@@ -184,20 +181,11 @@ class Visualizer:
         nx.draw_networkx_edges(g, pos, ax=ax, alpha=0.2, edge_color="gray")
 
         node_collection = nx.draw_networkx_nodes(
-            g,
-            pos,
-            node_size=600,
-            ax=ax,
-            cmap="coolwarm",
-            node_color=[0] * len(g),
+            g, pos, node_size=600, ax=ax, cmap="coolwarm", node_color=[0] * len(g),
         )
 
         text_items = nx.draw_networkx_labels(
-            g,
-            pos,
-            font_size=10,
-            font_weight="bold",
-            ax=ax,
+            g, pos, font_size=10, font_weight="bold", ax=ax,
         )
 
         highlight_nodes = nx.draw_networkx_nodes(
