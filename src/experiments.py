@@ -91,13 +91,11 @@ def ass_vs_dp() -> None:
         algorithm=Algorithm.SYNCHRONOUS,
     )
 
-    # Run ASS
     graph.set_initial_values(range_start=0, range_end=100)
     graph.apply_shares(random_range=100.0)
     res = simulator.run_simulation(graph, config, name="ASS")
     results.append(res)
 
-    # Run DP
     dp_scales = [0.1, 1.0, 5.0]
 
     for dp_scale in dp_scales:
