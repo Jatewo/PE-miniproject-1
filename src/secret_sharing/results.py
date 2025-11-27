@@ -17,7 +17,7 @@ class StepResult:
 @dataclass
 class SimulationResult:
     """Class for storing the result of a simulation."""
-
+    name: str
     algorithm: "Algorithm"
     graph: Graph
     history: list[StepResult]

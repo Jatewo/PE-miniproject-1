@@ -46,6 +46,7 @@ class Simulation:
         self,
         base_graph: Graph,
         config: SimulationConfig,
+        name: str,
     ) -> SimulationResult:
         """Run a simulation of additive secret sharing (ASS) using specified algorithm.
 
@@ -102,6 +103,7 @@ class Simulation:
                 break
 
         return SimulationResult(
+            name=name,
             algorithm=algorithm,
             graph=graph,
             history=history,

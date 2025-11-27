@@ -122,8 +122,7 @@ class Visualizer:
             iterations = [step.iteration for step in res.history]
             errors = [step.error for step in res.history]
 
-            label =(f"{res.graph.topology.name.capitalize()} - "
-                f"{res.algorithm.name.capitalize()} ({res.total_iterations} iters))")
+            label = (f"{res.name}")
             labels.append(label)
 
             plt.plot(
