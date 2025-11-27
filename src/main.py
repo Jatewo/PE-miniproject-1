@@ -44,12 +44,10 @@ graph.apply_shares(random_range=args.random_range)
 simulator = Simulation()
 visualizer = Visualizer()
 config = SimulationConfig(
-    max_iterations=args.max_iterations,
-    epsilon=args.epsilon,
-    algorithm=Algorithm[args.algorithm],
+    max_iterations=1000,
 )
-res_sync = simulator.run_simulation(graph, config)
-res_async = simulator.run_simulation(graph, config)
+res_sync = simulator.run_simulation(graph, config, name="ASS Sync")
+res_async = simulator.run_simulation(graph, config, name="ASS Async")
 
 log.info(f"Synchronous Iterations: {res_sync.total_iterations}")
 log.info(f"Asynchronous Iterations: {res_async.total_iterations}")
